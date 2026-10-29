@@ -209,7 +209,7 @@ async def main():
     ok("protect_content True when enabled, False when admin turns it off",
        pbot.protect == [True, False])
     d = DeliveryService(pbot, db, videos, users, cfg)
-    ok("protected by default without settings", d.protect is True)
+    ok("protected by default without settings", d.protect_for(99) is True)
 
     await db.close()
     print("ALL OK")

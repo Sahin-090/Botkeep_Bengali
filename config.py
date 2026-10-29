@@ -33,6 +33,23 @@ def _load_env_file() -> None:
 _load_env_file()
 
 
+def normalize_dsn(raw: str) -> str:
+    """Clean a PostgreSQL URL copied from a dashboard: quotes/spaces, postgres:// scheme and
+    query parameters asyncpg does not understand (e.g. Neon's channel_binding)."""
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+    dsn = raw.strip().strip("\"'").strip()
+    if dsn.startswith("postgres://"):
+        dsn = "postgresql://" + dsn[len("postgres://"):]
+    elif dsn.startswith(("postgresql+asyncpg://", "postgresql+psycopg2://")):
+        dsn = "postgresql://" + dsn.split("://", 1)[1]
+    parts = urlsplit(dsn)
+    if parts.query:
+        keep = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+                if k.lower() not in ("channel_binding", "options", "schema")]
+        dsn = urlunsplit(parts._replace(query=urlencode(keep)))
+    return dsn
+
+
 def _bool(value: str | None, default: bool = False) -> bool:
     if value is None or value == "":
         return default
@@ -135,7 +152,7 @@ def load_config() -> Config:
         token = os.getenv(name, "").strip()
         if token:
             break
-    dsn = os.getenv("DATABASE_URL", "").strip()
+    dsn = normalize_dsn(os.getenv("DATABASE_URL", ""))
     if not token:
         raise RuntimeError("BOT_TOKEN is not set")
     if not dsn:

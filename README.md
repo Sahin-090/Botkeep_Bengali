@@ -51,7 +51,7 @@ Scan progress (`scan_state` table) is checkpointed only *after* each batch is wr
 2. Push this folder to a GitHub repo → Hosting → *New Project → Deploy from GitHub*.
 3. In the project, *New → Database → PostgreSQL*.
 4. In the bot service → *Variables*: `BOT_TOKEN`, `ADMIN_IDS`, and `DATABASE_URL` (reference the Postgres service's `DATABASE_URL`), plus the scanner variables above. Add the optional variables from `.env.example` as needed.
-5. The `Procfile` runs `python bot.py` as a worker. The schema and migrations are applied automatically on every start (`database/schema.sql`, idempotent).
+5. The `Procfile` runs `python main.py` as a worker. The schema and migrations are applied automatically on every start (`database/schema.sql`, idempotent).
 6. Send `/scan` to the bot as an admin.
 
 Run only **one** instance of the service (Telegram long-polling doesn't support several). No Redis, no volumes, no files kept on Hostinger.
@@ -104,7 +104,7 @@ Users blocked by an admin or who stopped the bot are skipped. Sending is rate-li
 ```
 pip install -r requirements.txt
 cp .env.example .env   # fill in, then export the variables
-python bot.py
+python main.py
 ```
 
 ## Upgrade: unique delivery, menus, auto-delete
